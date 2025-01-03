@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.Networking; // Required for UnityWebRequest
-using System.Collections;    // Required for IEnumerator
+using UnityEngine.Networking;
+using System.Collections;
 
 public class DatabaseConnectionTest : MonoBehaviour
 {
-    private string url = "https://citmalumnes.upc.es/~albertcf5/D3/db_connect.php"; // Replace with your server's URL
+    private string url = "https://citmalumnes.upc.es/~albertcf5/D3/db_connect.php";
 
     void Start()
     {
