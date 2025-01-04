@@ -6,17 +6,20 @@ public class PlayerDeathLogger : MonoBehaviour
 {
     private string url = "https://citmalumnes.upc.es/~albertcf5/D3/SendPlayerDead.php";  // Replace with your actual PHP URL
 
-    public void LogPlayerDeath(int sessionID, string playerName, string cause)
+    public void LogPlayerDeath(int sessionID, string playerName, string cause, Vector3 position)
     {
-        StartCoroutine(SendPlayerDeathData(sessionID, playerName, cause));
+        StartCoroutine(SendPlayerDeathData(sessionID, playerName, cause, position));
     }
 
-    private IEnumerator SendPlayerDeathData(int sessionID, string playerName, string cause)
+    private IEnumerator SendPlayerDeathData(int sessionID, string playerName, string cause, Vector3 position)
     {
         WWWForm form = new WWWForm();
         form.AddField("session_id", sessionID.ToString());
         form.AddField("player_name", playerName);
         form.AddField("cause", cause);
+        form.AddField("x", position.x.ToString());
+        form.AddField("y", position.y.ToString());
+        form.AddField("z", position.z.ToString());
 
         UnityWebRequest www = UnityWebRequest.Post(url, form);
         yield return www.SendWebRequest();
@@ -30,5 +33,4 @@ public class PlayerDeathLogger : MonoBehaviour
             Debug.LogError("Error logging player death: " + www.error);
         }
     }
-
 }

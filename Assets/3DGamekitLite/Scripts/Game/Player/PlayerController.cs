@@ -686,22 +686,21 @@ namespace Gamekit3D
             m_Respawning = true;
             m_Damageable.isInvulnerable = true;
 
-            // Log the death event to the server
             if (deathLogger != null)
             {
                 int sessionID = 1;  // Replace with actual session ID
-                string playerName = "Player1"; // Replace with actual player ID
-
-                // Check if damager is null and assign a default name
+                string playerName = "Player1";  // Replace with actual player name
                 string causeOfDeath = (damageMessage.damager != null) ? damageMessage.damager.name : "Environment (Trap, Fall, etc.)";
+                Vector3 deathPosition = transform.position;  // Get the player’s current position
 
-                Debug.Log($"Logging Death: Session ID: {sessionID}, Player ID: {playerName}, Cause: {causeOfDeath}");
-                deathLogger.LogPlayerDeath(sessionID, playerName, causeOfDeath);
+                Debug.Log($"Logging Death: Session ID: {sessionID}, Player Name: {playerName}, Cause: {causeOfDeath}, Position: {deathPosition}");
+                deathLogger.LogPlayerDeath(sessionID, playerName, causeOfDeath, deathPosition);
             }
             else
             {
                 Debug.LogError("Death Logger is null. Ensure PlayerDeathLogger is in the scene.");
             }
         }
+
     }
 }
