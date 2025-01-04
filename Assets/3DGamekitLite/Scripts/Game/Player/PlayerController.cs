@@ -100,6 +100,14 @@ namespace Gamekit3D
         // Tags
         readonly int m_HashBlockInput = Animator.StringToHash("BlockInput");
 
+        private PlayerDeathLogger deathLogger;
+
+        private void Start()
+        {
+            deathLogger = FindObjectOfType<PlayerDeathLogger>();  // Find the death logger script
+            Debug.Log("Death Logger Found: " + deathLogger);
+        }
+
         protected bool IsMoveInput
         {
             get { return !Mathf.Approximately(m_Input.MoveInput.sqrMagnitude, 0f); }
@@ -677,6 +685,23 @@ namespace Gamekit3D
             m_VerticalSpeed = 0f;
             m_Respawning = true;
             m_Damageable.isInvulnerable = true;
+
+            // Log the death event to the server
+            if (deathLogger != null)
+            {
+                int sessionID = 1;  // Replace with actual session ID
+                string playerName = "Player1"; // Replace with actual player ID
+
+                // Check if damager is null and assign a default name
+                string causeOfDeath = (damageMessage.damager != null) ? damageMessage.damager.name : "Environment (Trap, Fall, etc.)";
+
+                Debug.Log($"Logging Death: Session ID: {sessionID}, Player ID: {playerName}, Cause: {causeOfDeath}");
+                deathLogger.LogPlayerDeath(sessionID, playerName, causeOfDeath);
+            }
+            else
+            {
+                Debug.LogError("Death Logger is null. Ensure PlayerDeathLogger is in the scene.");
+            }
         }
     }
 }
