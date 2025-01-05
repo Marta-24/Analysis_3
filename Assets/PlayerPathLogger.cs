@@ -38,7 +38,7 @@ public class PlayerPathLogger : MonoBehaviour
         if (sessionID != -1)
         {
             Vector3 position = transform.position;
-            Debug.Log($"Logging position: {position}");
+            // Debug.Log($"Logging position: {position}");
             LogPlayerPosition(sessionID, "Player1", position);
         }
     }
@@ -62,7 +62,7 @@ public class PlayerPathLogger : MonoBehaviour
 
         if (www.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Player path logged: " + www.downloadHandler.text);
+            // Debug.Log("Player path logged: " + www.downloadHandler.text);
         }
         else
         {
