@@ -688,19 +688,17 @@ namespace Gamekit3D
 
             if (deathLogger != null)
             {
-                int sessionID = 1;  // Replace with actual session ID
-                string playerName = "Player1";  // Replace with actual player name
-                string causeOfDeath = (damageMessage.damager != null) ? damageMessage.damager.name : "Environment (Trap, Fall, etc.)";
-                Vector3 deathPosition = transform.position;  // Get the player’s current position
+                string playerName = "Player1";  // Replace with actual player name if needed
+                string cause = (damageMessage.damager != null) ? damageMessage.damager.name : "Environment (Trap, Fall, etc.)";
+                Vector3 position = transform.position;  // Get the player’s current position
 
-                Debug.Log($"Logging Death: Session ID: {sessionID}, Player Name: {playerName}, Cause: {causeOfDeath}, Position: {deathPosition}");
-                deathLogger.LogPlayerDeath(sessionID, playerName, causeOfDeath, deathPosition);
+                Debug.Log($"Logging Death: Player Name: {playerName}, Cause: {cause}, Position: {position}");
+                deathLogger.LogPlayerDeath(playerName, cause, position);  // Removed sessionID from here
             }
             else
             {
                 Debug.LogError("Death Logger is null. Ensure PlayerDeathLogger is in the scene.");
             }
         }
-
     }
 }
