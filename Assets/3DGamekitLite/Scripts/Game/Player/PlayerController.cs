@@ -105,7 +105,7 @@ namespace Gamekit3D
         private void Start()
         {
             deathLogger = FindObjectOfType<PlayerDeathLogger>();  // Find the death logger script
-            Debug.Log("Death Logger Found: " + deathLogger);
+            // Debug.Log("Death Logger Found: " + deathLogger);
         }
 
         protected bool IsMoveInput

@@ -37,7 +37,7 @@ public class AttackLogger : MonoBehaviour
 
         if (www.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Session ID Response: " + www.downloadHandler.text);
+            // Debug.Log("Session ID Response: " + www.downloadHandler.text);
             SessionResponse response = JsonUtility.FromJson<SessionResponse>(www.downloadHandler.text);
             sessionID = response.session_id;
         }
@@ -98,16 +98,16 @@ public class AttackLogger : MonoBehaviour
         form.AddField("position_y", enemy.transform.position.y.ToString("F6", CultureInfo.InvariantCulture));
         form.AddField("position_z", enemy.transform.position.z.ToString("F6", CultureInfo.InvariantCulture));
 
-        Debug.Log($"Sending attack data: Session ID: {sessionID}, Player ID: {playerId}, Position: ({enemy.transform.position.x.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.y.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.z.ToString("F6", CultureInfo.InvariantCulture)})");
+        // Debug.Log($"Sending attack data: Session ID: {sessionID}, Player ID: {playerId}, Position: ({enemy.transform.position.x.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.y.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.z.ToString("F6", CultureInfo.InvariantCulture)})");
 
         UnityWebRequest www = UnityWebRequest.Post(attackLogUrl, form);
         yield return www.SendWebRequest();
 
-        Debug.Log("PHP Response: " + www.downloadHandler.text);
+        // Debug.Log("PHP Response: " + www.downloadHandler.text);
 
         if (www.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Attack data logged successfully!");
+            // Debug.Log("Attack data logged successfully!");
         }
         else
         {

@@ -29,7 +29,7 @@ public class GameStartLogger : MonoBehaviour
         }
         else
         {
-            Debug.Log("Server Response: " + www.downloadHandler.text);
+            // Debug.Log("Server Response: " + www.downloadHandler.text);
         }
     }
 }

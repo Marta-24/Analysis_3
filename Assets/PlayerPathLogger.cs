@@ -23,8 +23,7 @@ public class PlayerPathLogger : MonoBehaviour
             string jsonResponse = www.downloadHandler.text;
             SessionResponse sessionResponse = JsonUtility.FromJson<SessionResponse>(jsonResponse);
             sessionID = sessionResponse.session_id;
-            Debug.Log("Fetched session ID: " + sessionID);
-            // Start logging positions every second once session ID is fetched
+            // Debug.Log("Fetched session ID: " + sessionID);
             InvokeRepeating(nameof(LogPlayerPositionRepeating), 1f, 1f);
         }
         else

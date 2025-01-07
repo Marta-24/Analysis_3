@@ -24,7 +24,7 @@ public class PauseMenuLogger : MonoBehaviour
         {
             SessionResponse response = JsonUtility.FromJson<SessionResponse>(www.downloadHandler.text);
             sessionID = response.session_id;
-            Debug.Log($"Fetched session ID: {sessionID}");
+            // Debug.Log($"Fetched session ID: {sessionID}");
         }
         else
         {
@@ -45,12 +45,13 @@ public class PauseMenuLogger : MonoBehaviour
         Vector3 playerPosition = transform.position;  // Get player's current position
         string pauseTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
+        /*
         Debug.Log($"Pause Menu Opened: \n" +
                   $"Session ID: {sessionID}\n" +
                   $"Player ID: {playerId}\n" +
                   $"Pause Time: {pauseTime}\n" +
                   $"Position: (X: {playerPosition.x:F4}, Y: {playerPosition.y:F4}, Z: {playerPosition.z:F4})");
-
+        */
         StartCoroutine(SendPauseData(pauseTime, playerPosition));
     }
 
@@ -75,7 +76,7 @@ public class PauseMenuLogger : MonoBehaviour
 
         if (www.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Pause menu event logged successfully!");
+            // Debug.Log("Pause menu event logged successfully!");
         }
         else
         {
