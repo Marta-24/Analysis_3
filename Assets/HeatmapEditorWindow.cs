@@ -4,17 +4,41 @@ using UnityEditor;
 public class HeatmapEditorWindow : EditorWindow
 {
     private HeatmapDataFetcher heatmapFetcher;
-    private string[] dataTypes = { "Attack", "Interaction", "Path", "Damage", "Death", "Pause" };
-    private int selectedDataType = 0;
+    private string[] dataTypes = { "None", "Attack", "Interaction", "Path", "Damage", "Death", "Pause" };
 
-    private Color pointColor = Color.red;
+    private Color pointColor;
     private GameObject pointPrefab;
+    private float pointSize;
+
+    private HeatmapDataFetcher.DataType lastDataType = HeatmapDataFetcher.DataType.None;
 
     [MenuItem("Window/Heatmap Editor")]
     public static void ShowWindow()
     {
         HeatmapEditorWindow window = GetWindow<HeatmapEditorWindow>("Heatmap Editor");
         window.Show();
+    }
+
+    private void OnEnable()
+    {
+        EditorApplication.update += AutoRefresh;
+    }
+
+    private void OnDisable()
+    {
+        EditorApplication.update -= AutoRefresh;
+    }
+
+    private void AutoRefresh()
+    {
+        if (heatmapFetcher == null) return;
+
+        if (lastDataType != heatmapFetcher.currentDataType)
+        {
+            lastDataType = heatmapFetcher.currentDataType;
+            LoadSettingsForCurrentDataType();
+            Repaint();
+        }
     }
 
     private void OnGUI()
@@ -31,89 +55,102 @@ public class HeatmapEditorWindow : EditorWindow
         GUILayout.Space(10);
         GUILayout.Label("Point Settings", EditorStyles.boldLabel);
 
-        selectedDataType = EditorGUILayout.Popup("Data Type", selectedDataType, dataTypes);
+        int selectedDataTypeIndex = (int)heatmapFetcher.currentDataType;
+        EditorGUILayout.LabelField("Current Data Type:", dataTypes[selectedDataTypeIndex]);
+
+        if (heatmapFetcher.currentDataType == HeatmapDataFetcher.DataType.None)
+        {
+            EditorGUILayout.HelpBox("No dataset selected. Press F1-F6 to display a dataset.", MessageType.Info);
+            return;
+        }
 
         pointColor = EditorGUILayout.ColorField("Point Color", pointColor);
-
         pointPrefab = (GameObject)EditorGUILayout.ObjectField("Point Prefab", pointPrefab, typeof(GameObject), false);
+        pointSize = EditorGUILayout.FloatField("Point Size", pointSize);
 
         if (GUILayout.Button("Apply Changes"))
         {
-            ApplySettingsToDataType(selectedDataType);
-        }
-
-        GUILayout.Space(20);
-
-        if (GUILayout.Button("Preview Heatmap"))
-        {
-            PreviewHeatmap(selectedDataType);
+            ApplySettingsToCurrentDataType();
         }
     }
 
-    private void ApplySettingsToDataType(int dataTypeIndex)
+    private void LoadSettingsForCurrentDataType()
     {
         if (heatmapFetcher == null) return;
 
-        switch (dataTypes[dataTypeIndex])
+        switch (heatmapFetcher.currentDataType)
         {
-            case "Attack":
+            case HeatmapDataFetcher.DataType.Attack:
+                pointColor = heatmapFetcher.attackColor;
+                pointPrefab = heatmapFetcher.attackPrefab;
+                pointSize = heatmapFetcher.attackPointSize;
+                break;
+            case HeatmapDataFetcher.DataType.Interaction:
+                pointColor = heatmapFetcher.interactionColor;
+                pointPrefab = heatmapFetcher.interactionPrefab;
+                pointSize = heatmapFetcher.interactionPointSize;
+                break;
+            case HeatmapDataFetcher.DataType.Path:
+                pointColor = heatmapFetcher.pathColor;
+                pointPrefab = heatmapFetcher.pathPrefab;
+                pointSize = heatmapFetcher.pathPointSize;
+                break;
+            case HeatmapDataFetcher.DataType.Damage:
+                pointColor = heatmapFetcher.damageColor;
+                pointPrefab = heatmapFetcher.damagePrefab;
+                pointSize = heatmapFetcher.damagePointSize;
+                break;
+            case HeatmapDataFetcher.DataType.Death:
+                pointColor = heatmapFetcher.deathColor;
+                pointPrefab = heatmapFetcher.deathPrefab;
+                pointSize = heatmapFetcher.deathPointSize;
+                break;
+            case HeatmapDataFetcher.DataType.Pause:
+                pointColor = heatmapFetcher.pauseColor;
+                pointPrefab = heatmapFetcher.pausePrefab;
+                pointSize = heatmapFetcher.pausePointSize;
+                break;
+        }
+    }
+
+    private void ApplySettingsToCurrentDataType()
+    {
+        if (heatmapFetcher == null) return;
+
+        switch (heatmapFetcher.currentDataType)
+        {
+            case HeatmapDataFetcher.DataType.Attack:
                 heatmapFetcher.attackColor = pointColor;
-                heatmapFetcher.heatmapPointPrefab = pointPrefab ?? heatmapFetcher.heatmapPointPrefab;
+                heatmapFetcher.attackPrefab = pointPrefab;
+                heatmapFetcher.attackPointSize = pointSize;
                 break;
-
-            case "Interaction":
+            case HeatmapDataFetcher.DataType.Interaction:
                 heatmapFetcher.interactionColor = pointColor;
+                heatmapFetcher.interactionPrefab = pointPrefab;
+                heatmapFetcher.interactionPointSize = pointSize;
                 break;
-
-            case "Path":
+            case HeatmapDataFetcher.DataType.Path:
                 heatmapFetcher.pathColor = pointColor;
+                heatmapFetcher.pathPrefab = pointPrefab;
+                heatmapFetcher.pathPointSize = pointSize;
                 break;
-
-            case "Damage":
+            case HeatmapDataFetcher.DataType.Damage:
                 heatmapFetcher.damageColor = pointColor;
+                heatmapFetcher.damagePrefab = pointPrefab;
+                heatmapFetcher.damagePointSize = pointSize;
                 break;
-
-            case "Death":
+            case HeatmapDataFetcher.DataType.Death:
                 heatmapFetcher.deathColor = pointColor;
+                heatmapFetcher.deathPrefab = pointPrefab;
+                heatmapFetcher.deathPointSize = pointSize;
                 break;
-
-            case "Pause":
+            case HeatmapDataFetcher.DataType.Pause:
                 heatmapFetcher.pauseColor = pointColor;
+                heatmapFetcher.pausePrefab = pointPrefab;
+                heatmapFetcher.pausePointSize = pointSize;
                 break;
         }
 
-        EditorUtility.SetDirty(heatmapFetcher);
-    }
-
-    private void PreviewHeatmap(int dataTypeIndex)
-    {
-        if (heatmapFetcher == null) return;
-
-        switch (dataTypes[dataTypeIndex])
-        {
-            case "Attack":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchAttackData());
-                break;
-
-            case "Interaction":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchInteractionData());
-                break;
-
-            case "Path":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchPathData());
-                break;
-
-            case "Damage":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchDamageData());
-                break;
-
-            case "Death":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchDeathData());
-                break;
-
-            case "Pause":
-                heatmapFetcher.StartCoroutine(heatmapFetcher.FetchPauseData());
-                break;
-        }
+        EditorUtility.SetDirty(heatmapFetcher);  // Mark the data fetcher as changed
     }
 }
