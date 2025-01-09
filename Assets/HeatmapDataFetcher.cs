@@ -5,12 +5,19 @@ using UnityEngine.Networking;
 
 public class HeatmapDataFetcher : MonoBehaviour
 {
-    private string attackDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_attack_data.php";
-    private string interactionDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_interaction_data.php";
-    private string pathDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_player_path.php";
-    private string damageDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_damage_data.php";
-    private string deathDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_death_data.php";
-    private string pauseDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_pause_data.php";  // Nueva URL para datos de pausa
+    public Color attackColor = Color.red;
+    public Color interactionColor = Color.yellow;
+    public Color pathColor = Color.blue;
+    public Color damageColor = Color.red;
+    public Color deathColor = Color.black;
+    public Color pauseColor = Color.green;
+
+    public string attackDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_attack_data.php";
+    public string interactionDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_interaction_data.php";
+    public string pathDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_player_path.php";
+    public string damageDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_damage_data.php";
+    public string deathDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_death_data.php";
+    public string pauseDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_pause_data.php";
 
     public GameObject heatmapPointPrefab;
     public Gradient heatmapGradient;
@@ -162,9 +169,7 @@ public class HeatmapDataFetcher : MonoBehaviour
             StartCoroutine(FetchPauseData());
         }
     }
-
-    // Fetch y mostrar ataques
-    private IEnumerator FetchAttackData()
+    public IEnumerator FetchAttackData()
     {
         UnityWebRequest www = UnityWebRequest.Get(attackDataUrl);
         yield return www.SendWebRequest();
@@ -199,8 +204,7 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
-    // Fetch y mostrar interacciones
-    private IEnumerator FetchInteractionData()
+    public IEnumerator FetchInteractionData()
     {
         UnityWebRequest www = UnityWebRequest.Get(interactionDataUrl);
         yield return www.SendWebRequest();
@@ -227,14 +231,13 @@ public class HeatmapDataFetcher : MonoBehaviour
             GameObject point = Instantiate(heatmapPointPrefab, position, Quaternion.identity);
             point.transform.localScale = Vector3.one * pointSize;
 
-            point.GetComponent<Renderer>().material.color = Color.yellow;  // Interacciones en amarillo
+            point.GetComponent<Renderer>().material.color = Color.yellow;
 
             spawnedPoints.Add(point);
         }
     }
 
-    // Fetch y mostrar posiciones del jugador
-    private IEnumerator FetchPathData()
+    public IEnumerator FetchPathData()
     {
         UnityWebRequest www = UnityWebRequest.Get(pathDataUrl);
         yield return www.SendWebRequest();
@@ -261,14 +264,13 @@ public class HeatmapDataFetcher : MonoBehaviour
             GameObject point = Instantiate(heatmapPointPrefab, position, Quaternion.identity);
             point.transform.localScale = Vector3.one * pointSize;
 
-            point.GetComponent<Renderer>().material.color = Color.blue;  // Puntos de ruta en azul
+            point.GetComponent<Renderer>().material.color = Color.blue;
 
             spawnedPoints.Add(point);
         }
     }
 
-    // Fetch y mostrar daño recibido
-    private IEnumerator FetchDamageData()
+    public IEnumerator FetchDamageData()
     {
         UnityWebRequest www = UnityWebRequest.Get(damageDataUrl);
         yield return www.SendWebRequest();
@@ -295,14 +297,13 @@ public class HeatmapDataFetcher : MonoBehaviour
             GameObject point = Instantiate(heatmapPointPrefab, position, Quaternion.identity);
             point.transform.localScale = Vector3.one * pointSize;
 
-            point.GetComponent<Renderer>().material.color = Color.red;  // Daño recibido en rojo
+            point.GetComponent<Renderer>().material.color = Color.red;
 
             spawnedPoints.Add(point);
         }
     }
 
-    // Fetch y mostrar muertes
-    private IEnumerator FetchDeathData()
+    public IEnumerator FetchDeathData()
     {
         UnityWebRequest www = UnityWebRequest.Get(deathDataUrl);
         yield return www.SendWebRequest();
@@ -329,14 +330,13 @@ public class HeatmapDataFetcher : MonoBehaviour
             GameObject point = Instantiate(heatmapPointPrefab, position, Quaternion.identity);
             point.transform.localScale = Vector3.one * pointSize;
 
-            point.GetComponent<Renderer>().material.color = Color.black;  // Muertes en negro
+            point.GetComponent<Renderer>().material.color = Color.black;
 
             spawnedPoints.Add(point);
         }
     }
 
-    // Fetch y mostrar pausas
-    private IEnumerator FetchPauseData()
+    public IEnumerator FetchPauseData()
     {
         UnityWebRequest www = UnityWebRequest.Get(pauseDataUrl);
         yield return www.SendWebRequest();
@@ -363,7 +363,7 @@ public class HeatmapDataFetcher : MonoBehaviour
             GameObject point = Instantiate(heatmapPointPrefab, position, Quaternion.identity);
             point.transform.localScale = Vector3.one * pointSize;
 
-            point.GetComponent<Renderer>().material.color = Color.green;  // Pausas en verde
+            point.GetComponent<Renderer>().material.color = Color.green;
 
             spawnedPoints.Add(point);
         }
