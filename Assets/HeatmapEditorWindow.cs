@@ -6,19 +6,8 @@ public class HeatmapEditorWindow : EditorWindow
     private enum VisualizationMode { Points, Gradient }
     private VisualizationMode currentMode = VisualizationMode.Points;
 
-    private HeatmapDataFetcher heatmapFetcher;
-    private string[] dataTypes = { "None", "Attack", "Interaction", "Path", "Damage", "Death", "Pause" };
-
-    private Color pointColor;
-    private GameObject pointPrefab;
-    private float pointSize;
-    private string dataUrl;
-
-    private Gradient gradientColors = new Gradient();
-    private float gradientIntensity = 1f;
-    private int gradientResolution = 256;
-
-    private HeatmapDataFetcher.DataType lastDataType = HeatmapDataFetcher.DataType.None;
+    private HeatmapDataFetcher heatmapFetcher; // For point-based visualization
+    private HeatmapDataFetcherGrid heatmapFetcherGrid; // For gradient-based visualization
 
     private bool showPointSettings = true;
     private bool showGradientSettings = true;
@@ -32,225 +21,174 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void OnEnable()
     {
-        AssignHeatmapFetcher();
-        EditorApplication.update += AutoRefresh;
+        DeactivateAllGameObjects();
     }
 
     private void OnDisable()
     {
-        EditorApplication.update -= AutoRefresh;
-    }
-
-    private void AssignHeatmapFetcher()
-    {
-        if (heatmapFetcher == null)
-        {
-            if (Selection.activeGameObject != null)
-            {
-                heatmapFetcher = Selection.activeGameObject.GetComponent<HeatmapDataFetcher>();
-            }
-
-            if (heatmapFetcher == null)
-            {
-                heatmapFetcher = FindObjectOfType<HeatmapDataFetcher>();
-            }
-        }
-    }
-
-    private void AutoRefresh()
-    {
-        if (heatmapFetcher == null)
-        {
-            AssignHeatmapFetcher();
-            if (heatmapFetcher == null) return;
-        }
-
-        if (lastDataType != heatmapFetcher.currentDataType)
-        {
-            lastDataType = heatmapFetcher.currentDataType;
-            LoadSettingsForCurrentDataType();
-            Repaint();
-        }
+        DeactivateAllGameObjects();
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("Heatmap Editor", EditorStyles.boldLabel);
-        GUILayout.Space(10);
-
-        heatmapFetcher = (HeatmapDataFetcher)EditorGUILayout.ObjectField("Heatmap Data Fetcher", heatmapFetcher, typeof(HeatmapDataFetcher), true);
-        if (heatmapFetcher == null)
+        EditorGUILayout.Space(10);
+        GUILayout.Label("Heatmap Editor", new GUIStyle(EditorStyles.boldLabel)
         {
-            EditorGUILayout.HelpBox("Select a HeatmapDataFetcher to customize or press play mode to automatically assign.", MessageType.Warning);
-            return;
-        }
+            fontSize = 16,
+            alignment = TextAnchor.MiddleCenter
+        });
 
-        GUILayout.Space(10);
-
-        int selectedDataTypeIndex = (int)heatmapFetcher.currentDataType;
-        EditorGUILayout.LabelField("Current Data Type:", dataTypes[selectedDataTypeIndex]);
-
-        if (heatmapFetcher.currentDataType == HeatmapDataFetcher.DataType.None)
-        {
-            EditorGUILayout.HelpBox("No dataset selected. Press F1-F6 to display a dataset.", MessageType.Info);
-            return;
-        }
+        GUILayout.Space(15);
+        DrawModeSelection();
 
         GUILayout.Space(15);
 
-        currentMode = (VisualizationMode)EditorGUILayout.EnumPopup("Visualization Mode", currentMode);
-        GUILayout.Space(10);
-
-        switch (currentMode)
+        if (currentMode == VisualizationMode.Points)
         {
-            case VisualizationMode.Points:
-                ShowPointSettings();
-                break;
-
-            case VisualizationMode.Gradient:
-                ShowGradientSettings();
-                break;
+            ShowPointSettings();
+        }
+        else if (currentMode == VisualizationMode.Gradient)
+        {
+            ShowGradientSettings();
         }
 
-        GUILayout.Space(15);
+        GUILayout.Space(20);
+        DrawApplySettingsButton();
+    }
 
-        if (GUILayout.Button("Apply Changes", GUILayout.Height(30)))
+    private void DrawModeSelection()
+    {
+        EditorGUILayout.LabelField("Select Visualization Mode", EditorStyles.boldLabel);
+        VisualizationMode newMode = (VisualizationMode)EditorGUILayout.EnumPopup(new GUIContent("Mode:", "Choose how the heatmap is visualized"), currentMode);
+
+        heatmapFetcher = (HeatmapDataFetcher)EditorGUILayout.ObjectField(new GUIContent("Point Heatmap Data Fetcher:", "Assign a data fetcher for point-based visualization"), heatmapFetcher, typeof(HeatmapDataFetcher), true);
+        heatmapFetcherGrid = (HeatmapDataFetcherGrid)EditorGUILayout.ObjectField(new GUIContent("Gradient Heatmap Data Fetcher:", "Assign a data fetcher for gradient-based visualization"), heatmapFetcherGrid, typeof(HeatmapDataFetcherGrid), true);
+
+        if (newMode != currentMode)
         {
-            ApplySettingsToCurrentDataType();
+            currentMode = newMode;
+            ClearSceneObjects();
+            HandleGameObjectActivation();
         }
     }
 
     private void ShowPointSettings()
     {
-        showPointSettings = EditorGUILayout.Foldout(showPointSettings, "Point Settings", true);
-        if (showPointSettings)
+        showPointSettings = EditorGUILayout.Foldout(showPointSettings, "Point-Based Settings", true);
+        if (showPointSettings && heatmapFetcher != null)
         {
             EditorGUILayout.BeginVertical("box");
-            pointColor = EditorGUILayout.ColorField("Point Color", pointColor);
-            GUILayout.Space(5);
-            pointSize = EditorGUILayout.Slider("Point Size", pointSize, 0.1f, 5f);
+            GUILayout.Label("Configure Point-Based Heatmap", EditorStyles.boldLabel);
+
+            heatmapFetcher.attackColor = EditorGUILayout.ColorField(new GUIContent("Attack Color", "Color for attack points"), heatmapFetcher.attackColor);
+            heatmapFetcher.interactionColor = EditorGUILayout.ColorField(new GUIContent("Interaction Color", "Color for interaction points"), heatmapFetcher.interactionColor);
+            heatmapFetcher.pathColor = EditorGUILayout.ColorField(new GUIContent("Path Color", "Color for path points"), heatmapFetcher.pathColor);
+            heatmapFetcher.damageColor = EditorGUILayout.ColorField(new GUIContent("Damage Color", "Color for damage points"), heatmapFetcher.damageColor);
+            heatmapFetcher.deathColor = EditorGUILayout.ColorField(new GUIContent("Death Color", "Color for death points"), heatmapFetcher.deathColor);
+            heatmapFetcher.pauseColor = EditorGUILayout.ColorField(new GUIContent("Pause Color", "Color for pause points"), heatmapFetcher.pauseColor);
+
             GUILayout.Space(10);
-            pointPrefab = (GameObject)EditorGUILayout.ObjectField("Point Prefab", pointPrefab, typeof(GameObject), false);
-            EditorGUILayout.HelpBox("Drag and drop a prefab to visualize points in the heatmap.", MessageType.Info);
+            GUILayout.Label("Point Size Settings", EditorStyles.boldLabel);
+            heatmapFetcher.attackPointSize = EditorGUILayout.Slider("Attack Point Size", heatmapFetcher.attackPointSize, 0.1f, 5f);
+            heatmapFetcher.interactionPointSize = EditorGUILayout.Slider("Interaction Point Size", heatmapFetcher.interactionPointSize, 0.1f, 5f);
+            heatmapFetcher.pathPointSize = EditorGUILayout.Slider("Path Point Size", heatmapFetcher.pathPointSize, 0.1f, 5f);
+            heatmapFetcher.damagePointSize = EditorGUILayout.Slider("Damage Point Size", heatmapFetcher.damagePointSize, 0.1f, 5f);
+            heatmapFetcher.deathPointSize = EditorGUILayout.Slider("Death Point Size", heatmapFetcher.deathPointSize, 0.1f, 5f);
+            heatmapFetcher.pausePointSize = EditorGUILayout.Slider("Pause Point Size", heatmapFetcher.pausePointSize, 0.1f, 5f);
+
+            EditorGUILayout.HelpBox("Adjust point size and colors for the selected heatmap data.", MessageType.Info);
             EditorGUILayout.EndVertical();
         }
     }
 
     private void ShowGradientSettings()
     {
-        showGradientSettings = EditorGUILayout.Foldout(showGradientSettings, "Gradient Settings", true);
-        if (showGradientSettings)
+        showGradientSettings = EditorGUILayout.Foldout(showGradientSettings, "Gradient-Based Settings", true);
+        if (showGradientSettings && heatmapFetcherGrid != null)
         {
             EditorGUILayout.BeginVertical("box");
+            GUILayout.Label("Configure Gradient-Based Heatmap", EditorStyles.boldLabel);
 
-            GUILayout.Label("Gradient Color Map", EditorStyles.boldLabel);
-            gradientColors = EditorGUILayout.GradientField("Gradient", gradientColors);
+            heatmapFetcherGrid.colorGradient = EditorGUILayout.GradientField(new GUIContent("Gradient Colors", "Color gradient for the heatmap"), heatmapFetcherGrid.colorGradient);
+            heatmapFetcherGrid.cellSize = EditorGUILayout.Slider("Cell Size", heatmapFetcherGrid.cellSize, 0.1f, 10f);
+            heatmapFetcherGrid.gridSize = EditorGUILayout.IntSlider("Grid Size", heatmapFetcherGrid.gridSize, 10, 100);
 
             GUILayout.Space(10);
-            gradientIntensity = EditorGUILayout.Slider("Intensity", gradientIntensity, 0.1f, 10f);
-            gradientResolution = EditorGUILayout.IntSlider("Resolution", gradientResolution, 64, 1024);
-
-            EditorGUILayout.HelpBox("Adjust the gradient intensity and resolution for smoother visualization.", MessageType.Info);
-
-            if (GUILayout.Button("Preview Gradient Heatmap", GUILayout.Height(30)))
-            {
-                ApplyGradientHeatmap();
-            }
-
+            EditorGUILayout.HelpBox("Adjust the gradient settings for smoother heatmap visualization.", MessageType.Info);
             EditorGUILayout.EndVertical();
         }
     }
 
-    private void LoadSettingsForCurrentDataType()
+    private void DrawApplySettingsButton()
     {
-        if (heatmapFetcher == null) return;
-
-        switch (heatmapFetcher.currentDataType)
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("Apply Settings", "Apply the changes to the selected heatmap data"), GUILayout.Width(200), GUILayout.Height(30)))
         {
-            case HeatmapDataFetcher.DataType.Attack:
-                pointColor = heatmapFetcher.attackColor;
-                pointPrefab = heatmapFetcher.attackPrefab;
-                pointSize = heatmapFetcher.attackPointSize;
-                dataUrl = heatmapFetcher.attackDataUrl;
-                break;
-            case HeatmapDataFetcher.DataType.Interaction:
-                pointColor = heatmapFetcher.interactionColor;
-                pointPrefab = heatmapFetcher.interactionPrefab;
-                pointSize = heatmapFetcher.interactionPointSize;
-                dataUrl = heatmapFetcher.interactionDataUrl;
-                break;
-            case HeatmapDataFetcher.DataType.Path:
-                pointColor = heatmapFetcher.pathColor;
-                pointPrefab = heatmapFetcher.pathPrefab;
-                pointSize = heatmapFetcher.pathPointSize;
-                dataUrl = heatmapFetcher.pathDataUrl;
-                break;
-            case HeatmapDataFetcher.DataType.Damage:
-                pointColor = heatmapFetcher.damageColor;
-                pointPrefab = heatmapFetcher.damagePrefab;
-                pointSize = heatmapFetcher.damagePointSize;
-                dataUrl = heatmapFetcher.damageDataUrl;
-                break;
-            case HeatmapDataFetcher.DataType.Death:
-                pointColor = heatmapFetcher.deathColor;
-                pointPrefab = heatmapFetcher.deathPrefab;
-                pointSize = heatmapFetcher.deathPointSize;
-                dataUrl = heatmapFetcher.deathDataUrl;
-                break;
-            case HeatmapDataFetcher.DataType.Pause:
-                pointColor = heatmapFetcher.pauseColor;
-                pointPrefab = heatmapFetcher.pausePrefab;
-                pointSize = heatmapFetcher.pausePointSize;
-                dataUrl = heatmapFetcher.pauseDataUrl;
-                break;
+            ApplySettingsToFetchers();
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void ApplySettingsToFetchers()
+    {
+        if (currentMode == VisualizationMode.Points && heatmapFetcher != null)
+        {
+            Debug.Log("Point-based settings applied to HeatmapDataFetcher.");
+        }
+
+        if (currentMode == VisualizationMode.Gradient && heatmapFetcherGrid != null)
+        {
+            Debug.Log("Gradient-based settings applied to HeatmapDataFetcherGrid.");
+        }
+
+        HandleGameObjectActivation();
+    }
+
+    private void HandleGameObjectActivation()
+    {
+        DeactivateAllGameObjects();
+
+        if (currentMode == VisualizationMode.Points && heatmapFetcher != null && heatmapFetcher.gameObject != null)
+        {
+            heatmapFetcher.gameObject.SetActive(true);
+            Debug.Log("Activated Points Heatmap.");
+        }
+
+        if (currentMode == VisualizationMode.Gradient && heatmapFetcherGrid != null && heatmapFetcherGrid.gameObject != null)
+        {
+            heatmapFetcherGrid.gameObject.SetActive(true);
+            Debug.Log("Activated Gradient Heatmap.");
         }
     }
 
-    private void ApplySettingsToCurrentDataType()
+    private void DeactivateAllGameObjects()
     {
-        if (heatmapFetcher == null) return;
-
-        switch (heatmapFetcher.currentDataType)
+        if (heatmapFetcher != null && heatmapFetcher.gameObject != null)
         {
-            case HeatmapDataFetcher.DataType.Attack:
-                heatmapFetcher.attackColor = pointColor;
-                heatmapFetcher.attackPrefab = pointPrefab;
-                heatmapFetcher.attackPointSize = pointSize;
-                break;
-            case HeatmapDataFetcher.DataType.Interaction:
-                heatmapFetcher.interactionColor = pointColor;
-                heatmapFetcher.interactionPrefab = pointPrefab;
-                heatmapFetcher.interactionPointSize = pointSize;
-                break;
-            case HeatmapDataFetcher.DataType.Path:
-                heatmapFetcher.pathColor = pointColor;
-                heatmapFetcher.pathPrefab = pointPrefab;
-                heatmapFetcher.pathPointSize = pointSize;
-                break;
-            case HeatmapDataFetcher.DataType.Damage:
-                heatmapFetcher.damageColor = pointColor;
-                heatmapFetcher.damagePrefab = pointPrefab;
-                heatmapFetcher.damagePointSize = pointSize;
-                break;
-            case HeatmapDataFetcher.DataType.Death:
-                heatmapFetcher.deathColor = pointColor;
-                heatmapFetcher.deathPrefab = pointPrefab;
-                heatmapFetcher.deathPointSize = pointSize;
-                break;
-            case HeatmapDataFetcher.DataType.Pause:
-                heatmapFetcher.pauseColor = pointColor;
-                heatmapFetcher.pausePrefab = pointPrefab;
-                heatmapFetcher.pausePointSize = pointSize;
-                break;
+            heatmapFetcher.gameObject.SetActive(false);
+            Debug.Log("Deactivating HeatmapDataFetcher GameObject.");
         }
 
-        EditorUtility.SetDirty(heatmapFetcher);
+        if (heatmapFetcherGrid != null && heatmapFetcherGrid.gameObject != null)
+        {
+            heatmapFetcherGrid.gameObject.SetActive(false);
+            Debug.Log("Deactivating HeatmapDataFetcherGrid GameObject.");
+        }
     }
 
-    private void ApplyGradientHeatmap()
+    private void ClearSceneObjects()
     {
-        if (heatmapFetcher == null) return;
-
-        Debug.Log("Applying Gradient Heatmap with selected settings...");
+        Debug.Log("Clearing all heatmap-related objects from the scene.");
+        GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.name.Contains("HeatmapPoint") || obj.name.Contains("HeatmapGrid"))
+            {
+                DestroyImmediate(obj);
+                Debug.Log($"Destroyed object: {obj.name}");
+            }
+        }
     }
 }
