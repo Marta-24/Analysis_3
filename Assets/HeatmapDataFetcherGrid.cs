@@ -13,7 +13,7 @@ public class HeatmapDataFetcherGrid : MonoBehaviour
     public string deathDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_death_data.php";
     public string pauseDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_pause_data.php";
 
-    public float cellSize = 1f;
+    public float cellSize = 10f;
     public int gridSize = 50;
     public Gradient colorGradient;
 

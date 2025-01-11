@@ -25,12 +25,12 @@ public class HeatmapDataFetcher : MonoBehaviour
     public Color pauseColor = Color.green;
 
     // Sizes for each dataset
-    public float attackPointSize = 0.5f;
-    public float interactionPointSize = 0.5f;
-    public float pathPointSize = 0.5f;
-    public float damagePointSize = 0.5f;
-    public float deathPointSize = 0.5f;
-    public float pausePointSize = 0.5f;
+    public float attackPointSize = 2f;
+    public float interactionPointSize = 2f;
+    public float pathPointSize = 2f;
+    public float damagePointSize = 2f;
+    public float deathPointSize = 2f;
+    public float pausePointSize = 2f;
 
     public string attackDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_attack_data.php";
     public string interactionDataUrl = "https://citmalumnes.upc.es/~albertcf5/D3/get_interaction_data.php";
