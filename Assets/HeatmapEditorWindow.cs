@@ -12,6 +12,7 @@ public class HeatmapEditorWindow : EditorWindow
     private bool showPointSettings = true;
     private bool showGradientSettings = true;
 
+
     [MenuItem("Window/Heatmap Editor")]
     public static void ShowWindow()
     {
@@ -165,11 +166,11 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowPointSettings()
     {
-        showPointSettings = EditorGUILayout.Foldout(showPointSettings, "🎯 Point-Based Settings", true);
+        showPointSettings = EditorGUILayout.Foldout(showPointSettings, "Point-Based Settings", true);
         if (showPointSettings && heatmapFetcher != null)
         {
             EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("🔧 Configure Point-Based Heatmap", EditorStyles.boldLabel);
+            GUILayout.Label("Configure Point-Based Heatmap", EditorStyles.boldLabel);
 
             EditorGUILayout.HelpBox("Adjust the point settings below to change visualization behavior.", MessageType.Info);
 
@@ -204,23 +205,60 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowAttackSettings()
     {
-        EditorGUILayout.LabelField("🛡️ Attack Settings", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Attack Settings", EditorStyles.boldLabel);
         DrawPrefabField("Attack Prefab", ref heatmapFetcher.attackPrefab);
         heatmapFetcher.attackColor = EditorGUILayout.ColorField("Attack Color", heatmapFetcher.attackColor);
         heatmapFetcher.attackPointSize = EditorGUILayout.Slider("Attack Point Size", heatmapFetcher.attackPointSize, 0.1f, 5f);
+
+        GUILayout.Space(10);
+        heatmapFetcher.attackFilterType = (HeatmapDataFetcher.AttackFilterType)EditorGUILayout.EnumPopup("Attack Filter", heatmapFetcher.attackFilterType);
+
+        switch (heatmapFetcher.attackFilterType)
+        {
+            case HeatmapDataFetcher.AttackFilterType.All:
+                EditorGUILayout.HelpBox("Displaying all attacks.", MessageType.Info);
+                break;
+            case HeatmapDataFetcher.AttackFilterType.WithDamage:
+                EditorGUILayout.HelpBox("Displaying only attacks that dealt damage.", MessageType.Info);
+                break;
+            case HeatmapDataFetcher.AttackFilterType.NoDamage:
+                EditorGUILayout.HelpBox("Displaying only attacks that did not deal damage.", MessageType.Info);
+                break;
+        }
     }
 
     private void ShowInteractionSettings()
     {
-        GUILayout.Label("🛠️ Interaction Settings", EditorStyles.boldLabel);
+        GUILayout.Label("Interaction Settings", EditorStyles.boldLabel);
         heatmapFetcher.interactionPrefab = (GameObject)EditorGUILayout.ObjectField("Interaction Prefab", heatmapFetcher.interactionPrefab, typeof(GameObject), false);
         heatmapFetcher.interactionColor = EditorGUILayout.ColorField("Interaction Color", heatmapFetcher.interactionColor);
         heatmapFetcher.interactionPointSize = EditorGUILayout.Slider("Interaction Point Size", heatmapFetcher.interactionPointSize, 0.1f, 5f);
+
+        GUILayout.Space(10);
+        heatmapFetcher.interactionFilterType = (HeatmapDataFetcher.InteractionType)EditorGUILayout.EnumPopup("Interaction Type Filter", heatmapFetcher.interactionFilterType);
+
+        switch (heatmapFetcher.interactionFilterType)
+        {
+            case HeatmapDataFetcher.InteractionType.All:
+                EditorGUILayout.HelpBox("Displaying all interactions.", MessageType.Info);
+                break;
+            case HeatmapDataFetcher.InteractionType.Switch:
+                EditorGUILayout.HelpBox("Displaying only interactions with switches.", MessageType.Info);
+                break;
+            case HeatmapDataFetcher.InteractionType.Piston:
+                EditorGUILayout.HelpBox("Displaying only interactions with pistons.", MessageType.Info);
+                break;
+            case HeatmapDataFetcher.InteractionType.Health:
+                EditorGUILayout.HelpBox("Displaying only health-related interactions.", MessageType.Info);
+                break;
+        }
     }
+
+
 
     private void ShowPathSettings()
     {
-        GUILayout.Label("🛤️ Path Settings", EditorStyles.boldLabel);
+        GUILayout.Label("Path Settings", EditorStyles.boldLabel);
         heatmapFetcher.pathPrefab = (GameObject)EditorGUILayout.ObjectField("Path Prefab", heatmapFetcher.pathPrefab, typeof(GameObject), false);
         heatmapFetcher.pathColor = EditorGUILayout.ColorField("Path Color", heatmapFetcher.pathColor);
         heatmapFetcher.pathPointSize = EditorGUILayout.Slider("Path Point Size", heatmapFetcher.pathPointSize, 0.1f, 5f);
@@ -228,7 +266,7 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowDamageSettings()
     {
-        GUILayout.Label("💥 Damage Settings", EditorStyles.boldLabel);
+        GUILayout.Label("Damage Settings", EditorStyles.boldLabel);
         heatmapFetcher.damagePrefab = (GameObject)EditorGUILayout.ObjectField("Damage Prefab", heatmapFetcher.damagePrefab, typeof(GameObject), false);
         heatmapFetcher.damageColor = EditorGUILayout.ColorField("Damage Color", heatmapFetcher.damageColor);
         heatmapFetcher.damagePointSize = EditorGUILayout.Slider("Damage Point Size", heatmapFetcher.damagePointSize, 0.1f, 5f);
@@ -236,7 +274,7 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowDeathSettings()
     {
-        GUILayout.Label("☠️ Death Settings", EditorStyles.boldLabel);
+        GUILayout.Label("Death Settings", EditorStyles.boldLabel);
         heatmapFetcher.deathPrefab = (GameObject)EditorGUILayout.ObjectField("Death Prefab", heatmapFetcher.deathPrefab, typeof(GameObject), false);
         heatmapFetcher.deathColor = EditorGUILayout.ColorField("Death Color", heatmapFetcher.deathColor);
         heatmapFetcher.deathPointSize = EditorGUILayout.Slider("Death Point Size", heatmapFetcher.deathPointSize, 0.1f, 5f);
@@ -244,7 +282,7 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowPauseSettings()
     {
-        GUILayout.Label("⏸️ Pause Settings", EditorStyles.boldLabel);
+        GUILayout.Label("Pause Settings", EditorStyles.boldLabel);
         heatmapFetcher.pausePrefab = (GameObject)EditorGUILayout.ObjectField("Pause Prefab", heatmapFetcher.pausePrefab, typeof(GameObject), false);
         heatmapFetcher.pauseColor = EditorGUILayout.ColorField("Pause Color", heatmapFetcher.pauseColor);
         heatmapFetcher.pausePointSize = EditorGUILayout.Slider("Pause Point Size", heatmapFetcher.pausePointSize, 0.1f, 5f);
@@ -252,11 +290,11 @@ public class HeatmapEditorWindow : EditorWindow
 
     private void ShowGradientSettings()
     {
-        showGradientSettings = EditorGUILayout.Foldout(showGradientSettings, "🌈 Gradient-Based Settings", true);
+        showGradientSettings = EditorGUILayout.Foldout(showGradientSettings, "Gradient-Based Settings", true);
         if (showGradientSettings && heatmapFetcherGrid != null)
         {
             EditorGUILayout.BeginVertical("box");
-            GUILayout.Label("🎨 Configure Gradient-Based Heatmap", EditorStyles.boldLabel);
+            GUILayout.Label("Configure Gradient-Based Heatmap", EditorStyles.boldLabel);
 
             heatmapFetcherGrid.colorGradient = EditorGUILayout.GradientField("Gradient Colors", heatmapFetcherGrid.colorGradient);
             heatmapFetcherGrid.cellSize = EditorGUILayout.Slider("Cell Size", heatmapFetcherGrid.cellSize, 0.1f, 10f);

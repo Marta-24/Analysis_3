@@ -24,7 +24,7 @@ public class PlayerPathLogger : MonoBehaviour
             SessionResponse sessionResponse = JsonUtility.FromJson<SessionResponse>(jsonResponse);
             sessionID = sessionResponse.session_id;
             // Debug.Log("Fetched session ID: " + sessionID);
-            InvokeRepeating(nameof(LogPlayerPositionRepeating), 1f, 1f);
+            InvokeRepeating(nameof(LogPlayerPositionRepeating), 0.1f, 0.1f);
         }
         else
         {

@@ -41,6 +41,17 @@ public class HeatmapDataFetcher : MonoBehaviour
 
     private List<GameObject> spawnedPoints = new List<GameObject>();
 
+    public bool showOnlyDamagingAttacks = true;
+
+    public enum AttackFilterType { All, WithDamage, NoDamage }
+    public AttackFilterType attackFilterType = AttackFilterType.All;
+    public enum InteractionType { All, Switch, Piston, Health }
+    public InteractionType interactionFilterType = InteractionType.All;
+
+    public List<int> availableSessions = new List<int>();
+    public int selectedSessionID = -1; 
+
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.F1))
@@ -87,6 +98,7 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
+
     private void ClearExistingPoints()
     {
         foreach (GameObject point in spawnedPoints)
@@ -106,10 +118,26 @@ public class HeatmapDataFetcher : MonoBehaviour
             string json = www.downloadHandler.text;
             AttackDataList attackDataList = JsonUtility.FromJson<AttackDataList>("{\"attacks\":" + json + "}");
             List<Vector3> positions = new List<Vector3>();
+
             foreach (AttackData attack in attackDataList.attacks)
             {
+                // Apply the selected filter
+                switch (attackFilterType)
+                {
+                    case AttackFilterType.WithDamage:
+                        if (attack.damage_amount <= 0) continue; // Skip non-damaging attacks
+                        break;
+                    case AttackFilterType.NoDamage:
+                        if (attack.damage_amount > 0) continue; // Skip damaging attacks
+                        break;
+                    case AttackFilterType.All:
+                        // No filter, display all attacks
+                        break;
+                }
+
                 positions.Add(new Vector3(attack.position_x, attack.position_y, attack.position_z));
             }
+
             DisplayHeatmap(positions, attackPrefab, attackColor, attackPointSize);
         }
         else
@@ -128,10 +156,27 @@ public class HeatmapDataFetcher : MonoBehaviour
             string json = www.downloadHandler.text;
             InteractionDataList interactionDataList = JsonUtility.FromJson<InteractionDataList>("{\"interactions\":" + json + "}");
             List<Vector3> positions = new List<Vector3>();
+
             foreach (InteractionData interaction in interactionDataList.interactions)
             {
+                // Apply the selected filter
+                switch (interactionFilterType)
+                {
+                    case InteractionType.Switch:
+                        if (!interaction.interaction_type.Trim().Equals("Switch", System.StringComparison.OrdinalIgnoreCase)) continue;
+                        break;
+                    case InteractionType.Piston:
+                        if (!interaction.interaction_type.Trim().Equals("Piston", System.StringComparison.OrdinalIgnoreCase)) continue;
+                        break;
+                    case InteractionType.Health:
+                        if (!interaction.interaction_type.Trim().Equals("Health", System.StringComparison.OrdinalIgnoreCase)) continue;
+                        break;
+                }
+
+
                 positions.Add(new Vector3(interaction.position_x, interaction.position_y, interaction.position_z));
             }
+
             DisplayHeatmap(positions, interactionPrefab, interactionColor, interactionPointSize);
         }
         else
@@ -139,6 +184,8 @@ public class HeatmapDataFetcher : MonoBehaviour
             Debug.LogError("Error fetching interaction data: " + www.error);
         }
     }
+
+
 
     // Fetch Path Data
     public IEnumerator FetchPathData()

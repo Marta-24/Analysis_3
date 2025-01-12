@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Globalization;
+using System.Collections.Generic;
 
 public class AttackLogger : MonoBehaviour
 {
@@ -58,29 +59,47 @@ public class AttackLogger : MonoBehaviour
         {
             if (Time.time - lastAttackTime > attackCooldown)
             {
+                HashSet<Gamekit3D.Damageable> hitEnemies = new HashSet<Gamekit3D.Damageable>(); // Track unique enemies
+                Vector3 attackPosition = Vector3.zero; // Position of the attack
+
                 foreach (var attackPoint in meleeWeapon.attackPoints)
                 {
+                    attackPosition = attackPoint.attackRoot.position; // Store attack position
                     Collider[] hitColliders = Physics.OverlapSphere(attackPoint.attackRoot.position + attackPoint.attackRoot.TransformVector(attackPoint.offset), attackPoint.radius);
+
                     foreach (var hitCollider in hitColliders)
                     {
                         var enemy = hitCollider.GetComponent<Gamekit3D.Damageable>();
-                        if (enemy != null && enemy.gameObject != meleeWeapon.gameObject)
+                        if (enemy != null && enemy.gameObject != meleeWeapon.gameObject && !hitEnemies.Contains(enemy))
                         {
-                            LogAttack(enemy);
-                            lastAttackTime = Time.time;
+                            LogAttack(enemy, attackPoint.attackRoot.position); // Log attack only once per unique enemy
+                            hitEnemies.Add(enemy); // Mark enemy as hit
                         }
                     }
                 }
+
+                // If no enemies were hit, log as a missed attack
+                if (hitEnemies.Count == 0)
+                {
+                    LogMissedAttack(attackPosition);
+                }
+
+                lastAttackTime = Time.time; // Prevent immediate next attack
             }
         }
     }
 
-    private void LogAttack(Gamekit3D.Damageable enemy)
+    private void LogAttack(Gamekit3D.Damageable enemy, Vector3 attackPosition)
     {
-        StartCoroutine(SendAttackData(enemy));
+        StartCoroutine(SendAttackData(enemy, attackPosition));
     }
 
-    private IEnumerator SendAttackData(Gamekit3D.Damageable enemy)
+    private void LogMissedAttack(Vector3 attackPosition)
+    {
+        StartCoroutine(SendAttackData(null, attackPosition)); // Pass attack position for missed attacks
+    }
+
+    private IEnumerator SendAttackData(Gamekit3D.Damageable enemy, Vector3 attackPosition)
     {
         if (sessionID == -1)
         {
@@ -92,18 +111,14 @@ public class AttackLogger : MonoBehaviour
         form.AddField("session_id", sessionID);
         form.AddField("player_id", playerId);
         form.AddField("attack_time", System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-        form.AddField("damage_amount", meleeWeapon.damage.ToString());
+        form.AddField("damage_amount", enemy == null ? "0" : meleeWeapon.damage.ToString());
 
-        form.AddField("position_x", enemy.transform.position.x.ToString("F6", CultureInfo.InvariantCulture));
-        form.AddField("position_y", enemy.transform.position.y.ToString("F6", CultureInfo.InvariantCulture));
-        form.AddField("position_z", enemy.transform.position.z.ToString("F6", CultureInfo.InvariantCulture));
-
-        // Debug.Log($"Sending attack data: Session ID: {sessionID}, Player ID: {playerId}, Position: ({enemy.transform.position.x.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.y.ToString("F6", CultureInfo.InvariantCulture)}, {enemy.transform.position.z.ToString("F6", CultureInfo.InvariantCulture)})");
+        form.AddField("position_x", attackPosition.x.ToString("F6", CultureInfo.InvariantCulture));
+        form.AddField("position_y", attackPosition.y.ToString("F6", CultureInfo.InvariantCulture));
+        form.AddField("position_z", attackPosition.z.ToString("F6", CultureInfo.InvariantCulture));
 
         UnityWebRequest www = UnityWebRequest.Post(attackLogUrl, form);
         yield return www.SendWebRequest();
-
-        // Debug.Log("PHP Response: " + www.downloadHandler.text);
 
         if (www.result == UnityWebRequest.Result.Success)
         {
@@ -114,4 +129,5 @@ public class AttackLogger : MonoBehaviour
             Debug.LogError("Failed to log attack data: " + www.error);
         }
     }
+
 }
