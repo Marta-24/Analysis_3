@@ -46,7 +46,7 @@ public class HeatmapDataFetcherGrid : MonoBehaviour
         int maxCount = cellCounts.Values.Max();
         foreach (var cell in cellCounts)
         {
-            Vector3 centerPosition = new Vector3(cell.Key.x * cellSize, 0, cell.Key.y * cellSize);
+            Vector3 centerPosition = new Vector3(cell.Key.x * cellSize, 1.0f, cell.Key.y * cellSize);
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.transform.position = centerPosition;
             cube.transform.localScale = new Vector3(cellSize, 0.1f, cellSize);

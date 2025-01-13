@@ -8,7 +8,6 @@ public class HeatmapDataFetcher : MonoBehaviour
     public enum DataType { None, Attack, Interaction, Path, Damage, Death, Pause }
     public DataType currentDataType = DataType.None;
 
-    // Prefabs for each dataset
     public GameObject attackPrefab;
     public GameObject interactionPrefab;
     public GameObject pathPrefab;
@@ -16,7 +15,6 @@ public class HeatmapDataFetcher : MonoBehaviour
     public GameObject deathPrefab;
     public GameObject pausePrefab;
 
-    // Colors for each dataset
     public Color attackColor = Color.red;
     public Color interactionColor = Color.yellow;
     public Color pathColor = Color.blue;
@@ -24,7 +22,6 @@ public class HeatmapDataFetcher : MonoBehaviour
     public Color deathColor = Color.black;
     public Color pauseColor = Color.green;
 
-    // Sizes for each dataset
     public float attackPointSize = 2f;
     public float interactionPointSize = 2f;
     public float pathPointSize = 2f;
@@ -108,7 +105,6 @@ public class HeatmapDataFetcher : MonoBehaviour
         spawnedPoints.Clear();
     }
 
-    // Fetch Attack Data
     public IEnumerator FetchAttackData()
     {
         UnityWebRequest www = UnityWebRequest.Get(attackDataUrl);
@@ -121,17 +117,15 @@ public class HeatmapDataFetcher : MonoBehaviour
 
             foreach (AttackData attack in attackDataList.attacks)
             {
-                // Apply the selected filter
                 switch (attackFilterType)
                 {
                     case AttackFilterType.WithDamage:
-                        if (attack.damage_amount <= 0) continue; // Skip non-damaging attacks
+                        if (attack.damage_amount <= 0) continue;
                         break;
                     case AttackFilterType.NoDamage:
-                        if (attack.damage_amount > 0) continue; // Skip damaging attacks
+                        if (attack.damage_amount > 0) continue;
                         break;
                     case AttackFilterType.All:
-                        // No filter, display all attacks
                         break;
                 }
 
@@ -145,8 +139,6 @@ public class HeatmapDataFetcher : MonoBehaviour
             Debug.LogError("Error fetching attack data: " + www.error);
         }
     }
-
-    // Fetch Interaction Data
     public IEnumerator FetchInteractionData()
     {
         UnityWebRequest www = UnityWebRequest.Get(interactionDataUrl);
@@ -159,7 +151,6 @@ public class HeatmapDataFetcher : MonoBehaviour
 
             foreach (InteractionData interaction in interactionDataList.interactions)
             {
-                // Apply the selected filter
                 switch (interactionFilterType)
                 {
                     case InteractionType.Switch:
@@ -186,8 +177,6 @@ public class HeatmapDataFetcher : MonoBehaviour
     }
 
 
-
-    // Fetch Path Data
     public IEnumerator FetchPathData()
     {
         UnityWebRequest www = UnityWebRequest.Get(pathDataUrl);
@@ -209,7 +198,6 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
-    // Fetch Damage Data
     public IEnumerator FetchDamageData()
     {
         UnityWebRequest www = UnityWebRequest.Get(damageDataUrl);
@@ -231,7 +219,6 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
-    // Fetch Death Data
     public IEnumerator FetchDeathData()
     {
         UnityWebRequest www = UnityWebRequest.Get(deathDataUrl);
@@ -253,7 +240,6 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
-    // Fetch Pause Data
     public IEnumerator FetchPauseData()
     {
         UnityWebRequest www = UnityWebRequest.Get(pauseDataUrl);
@@ -275,7 +261,6 @@ public class HeatmapDataFetcher : MonoBehaviour
         }
     }
 
-    // Data Classes
     [System.Serializable] public class AttackData { public int session_id; public string player_id; public string attack_time; public float damage_amount; public float position_x; public float position_y; public float position_z; }
     [System.Serializable] public class InteractionData { public int session_id; public string player_id; public string interaction_type; public string interaction_time; public float position_x; public float position_y; public float position_z; }
     [System.Serializable] public class PathData { public int session_id; public string player_name; public string timestamp; public float position_x; public float position_y; public float position_z; }

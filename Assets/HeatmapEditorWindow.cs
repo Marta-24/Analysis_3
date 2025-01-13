@@ -6,8 +6,8 @@ public class HeatmapEditorWindow : EditorWindow
     private enum VisualizationMode { Points, Gradient }
     private VisualizationMode currentMode = VisualizationMode.Points;
 
-    private HeatmapDataFetcher heatmapFetcher;  // For point-based visualization
-    private HeatmapDataFetcherGrid heatmapFetcherGrid;  // For gradient-based visualization
+    private HeatmapDataFetcher heatmapFetcher;
+    private HeatmapDataFetcherGrid heatmapFetcherGrid;
 
     private bool showPointSettings = true;
     private bool showGradientSettings = true;
@@ -68,7 +68,7 @@ public class HeatmapEditorWindow : EditorWindow
     {
         if (heatmapFetcher != null && currentMode == VisualizationMode.Points)
         {
-            Repaint();  // Refreshes the window when the data type changes
+            Repaint();
         }
     }
 
@@ -85,7 +85,7 @@ public class HeatmapEditorWindow : EditorWindow
         DrawModeSelection();
 
         GUILayout.Space(10);
-        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);  // Separator line
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
         if (currentMode == VisualizationMode.Points)
         {
@@ -113,8 +113,8 @@ public class HeatmapEditorWindow : EditorWindow
         if (newMode != currentMode)
         {
             currentMode = newMode;
-            ClearSceneObjects();  // Remove previous objects when switching modes
-            HandleGameObjectActivation();  // Activate the correct GameObject
+            ClearSceneObjects();
+            HandleGameObjectActivation();
         }
     }
 
